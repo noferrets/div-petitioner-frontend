@@ -1,12 +1,12 @@
 /* eslint-disable no-magic-numbers */
-const waitForTimeout = parseInt(process.env.E2E_WAIT_FOR_TIMEOUT_VALUE) || 10000;
-const waitForAction = parseInt(process.env.E2E_WAIT_FOR_ACTION_VALUE) || 1000;
+const waitForTimeout = parseInt(process.env.E2E_WAIT_FOR_TIMEOUT_VALUE) || 15000;
+const waitForAction = parseInt(process.env.E2E_WAIT_FOR_ACTION_VALUE) || 2500;
 
 console.log('waitForTimeout value set to', waitForTimeout); // eslint-disable-line no-console
 console.log('waitForAction value set to', waitForAction); // eslint-disable-line no-console
 
 exports.config = {
-  tests: './test/end-to-end/paths/**/basicDivorce.js',
+  tests: './test/end-to-end/paths/**/*.js',
   output: './functional-output',
   timeout: waitForTimeout,
   helpers: {
