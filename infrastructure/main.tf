@@ -29,8 +29,8 @@ locals {
   local_env = "${(var.env == "preview" || var.env == "spreview") ? (var.env == "preview" ) ? "aat" : "saat" : var.env}"
 
   service_auth_provider_url = "http://rpe-service-auth-provider-${local.local_env}.service.core-compute-${local.local_env}.internal"
-  case_progression_service_url = "http://div-cps-${local.local_env}.service.core-compute-${local.local_env}.internal"
-  evidence_management_client_api_url = "http://div-emca-${local.local_env}.service.core-compute-${local.local_env}.internal"
+  case_progression_service_url = ${var.case_progression_service_url != "" ? var.case_progression_service_url : "http://div-cps-${local.local_env}.service.core-compute-${local.local_env}.internal}"
+  evidence_management_client_api_url = ${var.evidence_management_client_api_url != "" ? var.evidence_management_client_api_url : "http://div-emca-${local.local_env}.service.core-compute-${local.local_env}.internal}"
 
   previewVaultName = "${var.product}-${var.reform_service_name}"
   nonPreviewVaultName = "${var.reform_team}-${var.reform_service_name}-${var.env}"
@@ -132,7 +132,7 @@ module "frontend" {
     EVIDENCE_MANAGEMENT_CLIENT_API_UPLOAD_ENDPOINT= "${var.evidence_management_client_api_upload_endpoint}"
 
     // Case Progrssion Service
-    CASE_PROGRESSION_SERVICE_URL = "${local.case_progression_service_url}${var.transformation_service_base_path}"
+    CASE_PROGRESSION_SERVICE_URL = "${local.case_progression_service_url}${var.case_progression_base_path}"
     CASE_PROGRESSION_SERVICE_HEALTHCHECK_URL = "${local.case_progression_service_url}${var.health_endpoint}"
 
     // Draft Store API
