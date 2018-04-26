@@ -58,7 +58,7 @@ Scenario('Card payment online', function* (I) {
   I.checkMyAnswers();
   I.confirmIWillPayOnline();
   const isPaymentOnStub = yield I.getPaymentIsOnStub();
-  I.payOnPaymentPage(isPaymentOnStub);
+  I.payOnPaymentPage(false);
   I.amDoneAndSubmitted();
 });
 
@@ -109,7 +109,7 @@ Scenario('Card payment online failure', function* (I) {
 
   // Retry
   I.confirmIWillPayOnline();
-  I.payOnPaymentPage(isPaymentOnStub);
+  I.payOnPaymentPage(false);
   I.amDoneAndSubmitted();
 });
 
@@ -159,6 +159,6 @@ Scenario('Card payment online cancellation with retry', function* (I) {
 
   // Retry
   I.confirmIWillPayOnline();
-  I.payOnPaymentPage(isPaymentOnStub);
+  I.payOnPaymentPage(false);
   I.amDoneAndSubmitted();
 });
