@@ -6,7 +6,7 @@ console.log('waitForTimeout value set to', waitForTimeout); // eslint-disable-li
 console.log('waitForAction value set to', waitForAction); // eslint-disable-line no-console
 
 exports.config = {
-  tests: './test/end-to-end/paths/**/living*.js',
+  tests: './test/end-to-end/paths/**/jurisdiction*.js',
   output: './functional-output',
   timeout: waitForTimeout,
   helpers: {
