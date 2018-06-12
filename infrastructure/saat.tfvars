@@ -17,6 +17,6 @@ idam_api_url = "http://idam-api-idam-saat.service.core-compute-saat.internal"
 
 feature_toggle_api_url = "http://betaDevBdivorceAppLB.reform.hmcts.net:4012"
 
-payment_service_url = "https://test.payments.reform.hmcts.net:4421"
-fee_register_url = "https://test.fees-register.reform.hmcts.net:4431"
+payment_service_url = "http://payment-api-saat.service.core-compute-saat.internal"
+fee_register_url = "http://fees-register-api-saat.service.core-compute-saat.internal"
 post_code_url = "https://postcodeinfo.service.justice.gov.uk"
