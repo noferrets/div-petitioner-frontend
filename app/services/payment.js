@@ -31,7 +31,10 @@ const service = {
         };
       })
       .catch(error => {
-        logger.error(`Error creating payment with ccd case number ${caseReference}: ${error}`);
+        logger.error({
+          message: `Error creating payment with ccd case number ${caseReference}:`,
+          error
+        });
         throw error;
       });
   },
@@ -61,7 +64,10 @@ const service = {
         };
       })
       .catch(error => {
-        logger.error(`Error getting payment details for payment reference caseId ${referenceInput}: ${error}`);
+        logger.error({
+          message: `Error getting payment details for payment reference caseId ${referenceInput}:`,
+          error
+        });
         throw error;
       });
   }
@@ -74,7 +80,7 @@ module.exports = {
       serviceIdentification: CONF.services.payment.serviceIdentification
     };
     // Use the mock client if the microservice key is not set.
-    const secret = process.env.MICROSERVICE_KEY;
+    const secret = CONF.services.serviceAuthProvider.microserviceKey;
     client = secret ? payClient.init(options) : mockedClient;
 
     return service;

@@ -5,7 +5,12 @@ const Step = require('./Step');
 const initSession = require('app/middleware/initSession');
 const sessionTimeout = require('app/middleware/sessionTimeout');
 const { hasSubmitted } = require('app/middleware/submissionMiddleware');
-const { restoreFromDraftStore, saveSessionToDraftStore, saveSessionToDraftStoreAndClose } = require('app/middleware/draftPetitionStoreMiddleware');
+const {
+  restoreFromDraftStore,
+  saveSessionToDraftStore,
+  saveSessionToDraftStoreAndClose,
+  saveSessionToDraftStoreAndReply
+} = require('app/middleware/draftPetitionStoreMiddleware');
 const { idamProtect } = require('app/middleware/idamProtectMiddleware');
 const { setIdamUserDetails } = require('app/middleware/setIdamDetailsToSessionMiddleware');
 const fs = require('fs');
@@ -29,7 +34,10 @@ module.exports = class ValidationStep extends Step {
   }
 
   get postMiddleware() {
-    return [ saveSessionToDraftStore ];
+    return [
+      saveSessionToDraftStore,
+      saveSessionToDraftStoreAndReply
+    ];
   }
 
   get schema() {
@@ -112,11 +120,8 @@ module.exports = class ValidationStep extends Step {
     return requestHandler.parse(this, req);
   }
 
-  * postRequest(req, res) {
-    let { session } = req;
-
-    // clone session for applying stale data checks later
-    const previousSession = cloneDeep(session);
+  * parseCtx(req) {
+    const { session } = req;
 
     //  extract data from the request
     let ctx = this.populateWithPreExistingData(session);
@@ -133,17 +138,30 @@ module.exports = class ValidationStep extends Step {
 
     ctx = removeEmptyValues(ctx);
 
+    return ctx;
+  }
+
+  * postRequest(req, res) {
+    let { session } = req;
+
+    // clone session for applying stale data checks later
+    const previousSession = cloneDeep(session);
+
+    let ctx = yield this.parseCtx(req);
+
     //  then test whether the request is valid
     const [isValid] = this.validate(ctx, session);
 
-    if (isValid) {
+    if (!req.headers['x-save-draft-session-only'] && isValid) {
       [ctx, session] = this.action(ctx, session);
       session = this.applyCtxToSession(ctx, session);
       session = staleDataManager.removeStaleData(previousSession, session);
 
       const nextStepUrl = this.next(ctx, session).url;
       res.redirect(nextStepUrl);
-    } else {
+    }
+
+    if (!req.headers['x-save-draft-session-only'] && !isValid) {
       // set the flash message
       session.flash = {
         errors: true,

@@ -4,6 +4,10 @@ variable "reform_team" {
   default = "div"
 }
 
+variable "capacity" {
+  default = "1"
+}
+
 variable "reform_service_name" {
   default = "pfe"
 }
@@ -16,9 +20,14 @@ variable "location" {
   default = "UK South"
 }
 
-variable "env" { }
+variable "env" {}
 
-variable "ilbIp" { }
+variable "ilbIp" {}
+
+variable "appinsights_instrumentation_key" {
+  description = "Instrumentation key of the App Insights instance this webapp should use. Module will create own App Insights resource if this is not provided"
+  default     = ""
+}
 
 variable "deployment_env" {
   type = "string"
@@ -29,14 +38,13 @@ variable "deployment_path" {
 }
 
 variable "node_config_dir" {
-  // for Unix
-  // default = "/opt/divorce/frontend/config"
-  
+  // for Unix  // default = "/opt/divorce/frontend/config"
+
   // for Windows
   default = "D:\\home\\site\\wwwroot\\config"
 }
 
-variable "subscription" { }
+variable "subscription" {}
 
 variable "vault_section" {
   type = "string"
@@ -44,8 +52,8 @@ variable "vault_section" {
 
 // CNP settings
 variable "jenkins_AAD_objectId" {
-  type                        = "string"
-  description                 = "(Required) The Azure AD object ID of a user, service principal or security group in the Azure Active Directory tenant for the vault. The object ID must be unique for the list of access policies."
+  type        = "string"
+  description = "(Required) The Azure AD object ID of a user, service principal or security group in the Azure Active Directory tenant for the vault. The object ID must be unique for the list of access policies."
 }
 
 variable "tenant_id" {
@@ -105,10 +113,6 @@ variable "google_analytics_tracking_id" {}
 
 variable "google_analytics_tracking_url" {
   default = "http://www.google-analytics.com/collect"
-}
-
-variable "rediscloud_url" {
-  type = "string"
 }
 
 variable "use_auth" {
@@ -187,6 +191,10 @@ variable "fee_register_url" {
   type = "string"
 }
 
+variable "fees_and_payments_url" {
+  default = ""
+}
+
 variable "post_code_url" {
   default = "https://postcodeinfo.service.justice.gov.uk"
 }
@@ -216,7 +224,7 @@ variable "feature_new_jurisdiction" {
 }
 
 variable "feature_idam" {
-  default = false
+  default = true
 }
 
 variable "feature_foreign_marriage_certs" {
@@ -304,7 +312,7 @@ variable "court_westmidlands_siteid" {
 }
 
 variable "court_westmidlands_weight" {
-  default = "0.25"
+  default = "0.15"
 }
 
 variable "court_southwest_name" {
@@ -340,7 +348,7 @@ variable "court_southwest_siteid" {
 }
 
 variable "court_southwest_weight" {
-  default = "0.25"
+  default = "0.35"
 }
 
 variable "court_northwest_name" {
@@ -392,7 +400,7 @@ variable "court_opening_hours" {
 }
 
 variable "court_email" {
-  default = "Divorce_Reform_Pro@Justice.gov.uk"
+  default = "divorce@justice.gov.uk"
 }
 
 variable "court_eastmidlands_court_weight" {
@@ -400,11 +408,11 @@ variable "court_eastmidlands_court_weight" {
 }
 
 variable "court_westmidlands_court_weight" {
-  default = "0.25"
+  default = "0.15"
 }
 
 variable "court_southwest_court_weight" {
-  default = "0.25"
+  default = "0.35"
 }
 
 variable "court_northwest_court_weight" {

@@ -25,9 +25,7 @@ describe(modulePath, () => {
     underTest = s.steps.WithFees;
   });
 
-
   afterEach(() => {
-    s.http.close();
     idamMock.restore();
   });
 
@@ -62,6 +60,16 @@ describe(modulePath, () => {
 
     it('redirects to the next page when No selected', done => {
       const context = { helpWithFeesAppliedForFees: 'No' };
+
+      testRedirect(done, agent, underTest, context,
+        s.steps.ExitNoHelpWithFees);
+    });
+
+    it('redirects to the next page when No selected and HWF number not correct', done => {
+      const context = {
+        helpWithFeesAppliedForFees: 'No',
+        helpWithFeesReferenceNumber: 'WrongHWF'
+      };
 
       testRedirect(done, agent, underTest, context,
         s.steps.ExitNoHelpWithFees);
@@ -250,6 +258,15 @@ describe(modulePath, () => {
       const valuesToExist = ['helpWithFeesReferenceNumber'];
 
       const context = { helpWithFeesReferenceNumber: 'HWF-A1B-23C' };
+
+      testExistenceCYA(done, underTest, content,
+        contentToExist, valuesToExist, context);
+    });
+
+    it('renders HWF number as No for when no HWF number is present', done => {
+      const contentToExist = ['question'];
+      const valuesToExist = ['helpWithFeesReferenceNumber'];
+      const context = { helpWithFeesReferenceNumber: 'No' };
 
       testExistenceCYA(done, underTest, content,
         contentToExist, valuesToExist, context);

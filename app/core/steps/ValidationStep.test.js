@@ -5,7 +5,12 @@ const { expect, sinon } = require('test/util/chai');
 const initSession = require('app/middleware/initSession');
 const sessionTimeout = require('app/middleware/sessionTimeout');
 const { hasSubmitted } = require('app/middleware/submissionMiddleware');
-const { restoreFromDraftStore, saveSessionToDraftStoreAndClose, saveSessionToDraftStore } = require('app/middleware/draftPetitionStoreMiddleware');
+const {
+  restoreFromDraftStore,
+  saveSessionToDraftStoreAndClose,
+  saveSessionToDraftStore,
+  saveSessionToDraftStoreAndReply
+} = require('app/middleware/draftPetitionStoreMiddleware');
 const { idamProtect } = require('app/middleware/idamProtectMiddleware');
 const { setIdamUserDetails } = require('app/middleware/setIdamDetailsToSessionMiddleware');
 const Step = require('app/core/steps/Step');
@@ -40,7 +45,10 @@ describe(modulePath, () => {
   describe('#postMiddleware', () => {
     it('returns postMiddleware for validation step', () => {
       underTest = new UnderTest({}, 'screening-questions', null, fixtures.content.simple, fixtures.schemas.simple);
-      const middleware = [ saveSessionToDraftStore ];
+      const middleware = [
+        saveSessionToDraftStore,
+        saveSessionToDraftStoreAndReply
+      ];
       expect(underTest.postMiddleware).to.eql(middleware);
     });
   });
@@ -289,6 +297,51 @@ describe(modulePath, () => {
     });
   });
 
+  describe('#parseCtx', () => {
+    let req = {};
+    const exsistingData = {
+      field1: 'value1',
+      field2: 'value2'
+    };
+    const postedData = { field3: 'value3' };
+    const currentStepUrl = 'current/step/url';
+    class TestClass extends UnderTest {
+      get url() {
+        return currentStepUrl;
+      }
+    }
+
+    beforeEach(done => {
+      underTest = new TestClass({}, 'screening-questions', null, fixtures.content.simple, fixtures.schemas.simple);
+
+      req = { session: exsistingData };
+
+      sinon.stub(underTest, 'populateWithPreExistingData').returns(exsistingData);
+      sinon.stub(underTest, 'parseRequest').returns(postedData);
+      sinon.spy(underTest, 'interceptor');
+
+      done();
+    });
+    afterEach(() => {
+      underTest.populateWithPreExistingData.restore();
+      underTest.parseRequest.restore();
+      underTest.interceptor.restore();
+    });
+
+    it('parses context from session', done => {
+      co(function* generator() {
+        const ctx = yield underTest.parseCtx(req);
+
+        expect(underTest.populateWithPreExistingData.calledOnce).to.eql(true);
+        expect(underTest.parseRequest.calledOnce).to.eql(true);
+        expect(underTest.interceptor.calledOnce).to.eql(true);
+        expect(ctx).to.eql(Object.assign({}, exsistingData, postedData));
+
+        done();
+      });
+    });
+  });
+
   describe('#postRequest', () => {
     let req = {};
     let res = {};
@@ -308,15 +361,16 @@ describe(modulePath, () => {
     beforeEach(done => {
       underTest = new TestClass({}, 'screening-questions', null, fixtures.content.simple, fixtures.schemas.simple);
 
-      req = { session: exsistingData };
+      req = {
+        session: exsistingData,
+        headers: {}
+      };
       res = {
         redirect: sinon.stub(),
         headersSent: true
       };
 
-      sinon.stub(underTest, 'populateWithPreExistingData').returns(exsistingData);
-      sinon.stub(underTest, 'parseRequest').returns(postedData);
-      sinon.spy(underTest, 'interceptor');
+      sinon.stub(underTest, 'parseCtx').returns(Object.assign({}, exsistingData, postedData));
       sinon.stub(underTest, 'validate');
       sinon.spy(underTest, 'action');
       sinon.spy(underTest, 'applyCtxToSession');
@@ -325,10 +379,9 @@ describe(modulePath, () => {
 
       done();
     });
+
     afterEach(() => {
-      underTest.populateWithPreExistingData.restore();
-      underTest.parseRequest.restore();
-      underTest.interceptor.restore();
+      underTest.parseCtx.restore();
       underTest.validate.restore();
       underTest.action.restore();
       underTest.applyCtxToSession.restore();
@@ -346,9 +399,7 @@ describe(modulePath, () => {
         co(function* generator() {
           yield underTest.postRequest(req, res);
 
-          expect(underTest.populateWithPreExistingData.calledOnce).to.eql(true);
-          expect(underTest.parseRequest.calledOnce).to.eql(true);
-          expect(underTest.interceptor.calledOnce).to.eql(true);
+          expect(underTest.parseCtx.calledOnce).to.eql(true);
           expect(underTest.validate.calledOnce).to.eql(true);
           expect(underTest.action.calledOnce).to.eql(true);
           expect(underTest.applyCtxToSession.calledOnce).to.eql(true);
@@ -370,10 +421,8 @@ describe(modulePath, () => {
         co(function* generator() {
           yield underTest.postRequest(req, res);
 
-          expect(underTest.populateWithPreExistingData.calledOnce)
+          expect(underTest.parseCtx.calledOnce)
             .to.eql(true);
-          expect(underTest.parseRequest.calledOnce).to.eql(true);
-          expect(underTest.interceptor.calledOnce).to.eql(true);
           expect(underTest.validate.calledOnce).to.eql(true);
           expect(underTest.action.calledOnce).to.eql(false);
           expect(underTest.applyCtxToSession.calledOnce).to.eql(false);

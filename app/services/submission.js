@@ -23,7 +23,10 @@ const service = {
         return response;
       })
       .catch(error => {
-        logger.error(`Error submitting caseId ${args.caseId} to ccd: ${error}`);
+        logger.error({
+          message: `Error submitting caseId ${args.caseId} to ccd:`,
+          error
+        });
         throw error;
       });
   },
@@ -34,7 +37,10 @@ const service = {
         return response;
       })
       .catch(error => {
-        logger.error(`Error updating ccd with caseId ${args.caseId}: ${error}`);
+        logger.error({
+          message: `Error updating ccd with caseId ${args.caseId}:`,
+          error
+        });
         throw error;
       });
   }
@@ -79,7 +85,7 @@ const generatePaymentEventData = (session, response) => {
 const setup = () => {
   const options = { baseUrl: CONF.services.transformation.baseUrl };
   // If the microservice key is not set we fall back to mocks.
-  const secret = process.env.MICROSERVICE_KEY;
+  const secret = CONF.services.serviceAuthProvider.microserviceKey;
   client = secret ? transformationServiceClient.init(options) : mockedClient;
 
   return service;

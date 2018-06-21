@@ -6,14 +6,14 @@ const logger = require('app/services/logger').logger(__filename);
 const ioRedis = require('ioredis');
 
 const secret = CONF.secret;
-const redisHost = process.env.REDISCLOUD_URL || CONF.services.redis.host;
+const redisHost = CONF.services.redis.host;
 const ttl = CONF.session.ttl;
-const cookieSecure = process.env.PUBLIC_PROTOCOL === 'https';
+const cookieSecure = CONF.public.protocol === 'https';
 
 const sessions = module.exports = { // eslint-disable-line no-multi-assign
 
   prod: (req, res, next) => {
-    if (process.env.NODE_ENV === 'testing') {
+    if (CONF.environment === 'testing') {
       return sessions.inmemory();
     }
 
@@ -21,9 +21,6 @@ const sessions = module.exports = { // eslint-disable-line no-multi-assign
   },
   redis: () => {
     const client = ioRedis.createClient(redisHost);
-    client.on('error', error => {
-      logger.error(error);
-    });
 
     client.on('connect', () => {
       logger.info({ message: 'Connected to Redis' });
@@ -32,7 +29,7 @@ const sessions = module.exports = { // eslint-disable-line no-multi-assign
     client.on('error', error => {
       logger.error({
         message: 'Failed to connect to Redis',
-        error: error.message
+        error
       });
     });
 
@@ -44,7 +41,7 @@ const sessions = module.exports = { // eslint-disable-line no-multi-assign
       try {
         serializer = sessionSerializer.createSerializer(req, res);
       } catch (error) {
-        logger.error(`Unable to create serializer ${error}`);
+        logger.error(error);
         return res.redirect('/generic-error');
       }
 
@@ -68,7 +65,7 @@ const sessions = module.exports = { // eslint-disable-line no-multi-assign
         cookie: {
           secure: cookieSecure,
           httpOnly: true,
-          domain: req.get('host')
+          domain: req.hostname
         }
       })(req, res, sessionHandled);
     };
