@@ -1,29 +1,13 @@
-#!groovy
+// execute nightly at 11:00 PM
+properties([
+        pipelineTriggers([cron('H 23 * * *')])
+])
 
-@Library("Infrastructure")
+// parameters are: product, component, environment
+withPerformanceTest('custard', 'recipe-backend', 'saat') {
 
-String product = "div"
-String component = "pfe"
-
-withPipeline("nodejs", product, component) {  
-  after('build') {
-    sh 'yarn setup'
+  // Set target URL
+  before('performancetest') {
+    env.TEST_URL = 'https://custard-recipe-backend-saat-staging.service.core-compute-saat.internal'
   }
-
-  after('test') {
-    sh 'yarn test-validation'
-    sh 'yarn test:mutation'
-  }
-
-  after('functionalTest:aat') {
-    steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'smoke-output/**/*'
-    steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'functional-output/**/*'
-  }
-
-  after('functionalTest:preview') {
-    steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'smoke-output/**/*'
-    steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'functional-output/**/*'
-  }
-
-  enableSlackNotifications('#div-dev')
 }
